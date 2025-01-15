@@ -1,0 +1,16 @@
+flowchart LR
+    User["User's Computer"]
+    DNS["DNS Server\n(www.foobar.com → 8.8.8.8)"]
+    
+    subgraph Server["Single Server (IP: 8.8.8.8)"]
+        Nginx["Web Server\n(Nginx)"]
+        App["Application Server\n(e.g., PHP-FPM)"]
+        Code["Application Files\n(Code Base)"]
+        MySQL["Database\n(MySQL)"]
+    end
+    
+    User <--"1. DNS Query"--> DNS
+    User <--"2. HTTP/HTTPS"--> Nginx
+    Nginx <--> App
+    App <--> Code
+    App <--> MySQL
