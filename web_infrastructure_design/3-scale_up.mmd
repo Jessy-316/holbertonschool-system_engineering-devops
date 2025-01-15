@@ -1,0 +1,56 @@
+flowchart TD
+    User["User's Computer"]
+    DNS["DNS Server\n(www.foobar.com)"]
+    
+    subgraph External["External Network"]
+        FW1["Firewall 1"]
+    end
+    
+    subgraph LB_Cluster["Load Balancer Cluster"]
+        FW_LB["Firewall"]
+        HAProxy1["HAProxy Primary\nSSL Termination"]
+        HAProxy2["HAProxy Secondary\nSSL Termination"]
+        MC_LB["Monitoring Client"]
+    end
+    
+    subgraph WebServer["Web Server"]
+        FW_Web["Firewall"]
+        Nginx["Nginx"]
+        MC_Web["Monitoring Client"]
+    end
+    
+    subgraph AppServer["Application Server"]
+        FW_App["Firewall"]
+        App["Application Server"]
+        Code["Code Base"]
+        MC_App["Monitoring Client"]
+    end
+    
+    subgraph DB_Primary["Database Primary Server"]
+        FW_DB1["Firewall"]
+        MySQL_Primary["MySQL Primary"]
+        MC_DB1["Monitoring Client"]
+    end
+    
+    subgraph DB_Replica["Database Replica Server"]
+        FW_DB2["Firewall"]
+        MySQL_Replica["MySQL Replica"]
+        MC_DB2["Monitoring Client"]
+    end
+    
+    User <--"1. DNS Query"--> DNS
+    User <--"2. HTTPS"--> FW1
+    FW1 <--> HAProxy1 & HAProxy2
+    HAProxy1 <--"Heartbeat"--> HAProxy2
+    
+    HAProxy1 & HAProxy2 <--> FW_Web
+    FW_Web <--> Nginx
+    Nginx <--> FW_App
+    FW_App <--> App
+    App <--> Code
+    App <--> FW_DB1
+    FW_DB1 <--> MySQL_Primary
+    MySQL_Primary --"Replication"--> MySQL_Replica
+    
+    MonitoringService["Monitoring Service\n(Sumo Logic)"]
+    MC_LB & MC_Web & MC_App & MC_DB1 & MC_DB2 --"Metrics & Logs"--> MonitoringService
